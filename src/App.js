@@ -7,6 +7,7 @@ import Button, { ButtonGroup } from '@atlaskit/button';
 import {TimePicker} from '@atlaskit/datetime-picker';
 import EmojiFrequentIcon from '@atlaskit/icon/glyph/emoji/frequent';
 import {FieldTextStateless} from '@atlaskit/field-text';
+import Modal from '@atlaskit/modal-dialog';
 import {GamerItem} from './components/GamerItem';
 import {LoaderScreen} from './components/LoaderScreen';
 import {MiniLoader} from './components/MiniLoader';
@@ -25,8 +26,7 @@ const Page = styled.div`
     padding-top: 20px;
 `;
 
-const MainForm = styled.form`
-    display: block;
+const MainForm = styled.div`
     width: 100%;
 `;
 
@@ -83,57 +83,56 @@ const gamesRef = firebase.database().ref('games');
 const gamersRef = firebase.database().ref('gamers');
 
 const defaultState = {
-    time: '21:00',
-    key: '',
     loading: false,
-    updateTime: '',
+    loader: false,
     page: 'game',
+    newGamerName: '',
+    gamersList: [],
+    waitingConfirm: false,
+    game: {
+        updateTime: null,
+        createTime: null,
+        key: null,
+        time: '21:00',
+    },
 };
 
 class App extends Component {
     state = {
-        time: '21:00',
-        key: '',
+        ...defaultState,
         loading: true,
-        page: 'game',
-        newGamerName: '',
     };
 
-    handleTimeInput = value => {
+    handleTimeInput = time => {
+        const {game} = this.state;
+
+        firebase.database().ref().update({
+            [`games/${game.key}/time`]: time,
+        });
+
+        this.setTimeUpdate();
+    };
+
+    setTimeUpdate = () => {
+        firebase.database().ref().update({
+            [`games/${this.state.game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
+        });
+    };
+
+    handleCreateGame = () => {
+        const timestamp = firebase.database.ServerValue.TIMESTAMP;
+
+        gamesRef.push({
+            updateTime: timestamp,
+            createTime: timestamp,
+            time: this.state.game.time,
+        });
+    };
+
+    handleDeleteGame = () => {
         this.setState({
-            time: value,
+            waitingConfirm: true,
         });
-    };
-
-    handleSubmit = evt => {
-        evt.preventDefault();
-
-        gamesRef.limitToLast(1).once('value').then(lastGameSnapshot => {
-            const game = lastGameSnapshot.val();
-
-            if (!game) {
-                const newGameRef = gamesRef.push();
-
-                newGameRef
-                    .set({
-                        createTime: firebase.database.ServerValue.TIMESTAMP,
-                        time: this.state.time,
-                    });
-            } else {
-                if (moment().isSame(game.createTime, 'day')) {
-                    const key = Object.keys(game)[0];
-                    const updates = {};
-                    updates[`games/${key}/time`] = this.state.time;
-                    updates[`games/${key}/updateTime`] = firebase.database.ServerValue.TIMESTAMP;
-
-                    firebase.database().ref().update(updates);
-                }
-            }
-        });
-    };
-
-    handleDelete = () => {
-        gamesRef.child(this.state.key).remove();
     };
 
     visualUpdate = () => {
@@ -178,22 +177,40 @@ class App extends Component {
         gamersRef.child(id).remove();
     };
 
+    handleCloseModal = () => {
+        this.setState({
+            waitingConfirm: false,
+        });
+    };
+
+    handleConfirmModal = () => {
+        this.setState({
+            waitingConfirm: false,
+        });
+
+        gamesRef.child(this.state.game.key).remove();
+    };
+
     componentDidMount() {
         gamesRef.limitToLast(1).on('value', lastGameSnapshot => {
             this.visualUpdate();
 
-            const game = lastGameSnapshot.val();
+            const gameValue = lastGameSnapshot.val();
 
-            if (game) {
-                const key = Object.keys(game)[0];
-                const gameData = game[key];
+            if (gameValue) {
+                const key = Object.keys(gameValue)[0];
+                const gameData = gameValue[key];
 
                 if (moment().isSame(gameData.createTime, 'day')) {
                     this.setState({
-                        ...gameData,
+                        game: {
+                            ...gameData,
+                            key,
+                        },
                         loading: false,
-                        key,
                     });
+                } else {
+                    this.setState(defaultState);
                 }
             } else {
                 this.setState(defaultState);
@@ -224,78 +241,93 @@ class App extends Component {
 
     render() {
         const {
-            time,
-            createTime,
-            updateTime,
-            key,
+            game,
             loading,
             loader,
             gamersList,
-            page
+            page,
+            waitingConfirm,
         } = this.state;
 
-        const game = (
+        const gamePage = (
             <Page>
-                <MainForm onSubmit={this.handleSubmit}>
-                    {/*<FieldTextStateless*/}
-                        {/*label="Stateless Text Input Example"*/}
-                        {/*onChange={this.setValue}*/}
-                        {/*value={this.state.value}*/}
-                    {/*/>*/}
-                    <Row>
-                        <RowTitle>Дата игры:</RowTitle>
-                        <DateRow>
-                            <DateRowDate>
-                                {moment(createTime).format('D.MM')}
-                            </DateRowDate>
-                            <DateRowTime>
-                                <TimePicker
-                                    onChange={this.handleTimeInput}
-                                    times={['19:00', '20:00', '21:00']}
-                                    timeFormat="HH:mm"
-                                    value={time}
-                                    timeIsEditable
-                                    icon={EmojiFrequentIcon}
-                                />
-                            </DateRowTime>
-                        </DateRow>
-                    </Row>
+                {!game.createTime && (
+                    <p>Игру еще никто не создал</p>
+                )}
 
-                    <Row>
-                        <RowTitle>Сегодня играют:</RowTitle>
-                        Иванов Вадим
-                        <br />
-                        Петров Олег
-                    </Row>
+                {game.createTime && (
+                    <MainForm>
+                        <Row>
+                            <RowTitle>Дата игры:</RowTitle>
+                            <DateRow>
+                                <DateRowDate>
+                                    {game.createTime && moment(game.createTime).format('D.MM')}
+                                </DateRowDate>
+                                <DateRowTime>
+                                    <TimePicker
+                                        onChange={this.handleTimeInput}
+                                        times={['19:00', '20:00', '21:00']}
+                                        timeFormat="HH:mm"
+                                        value={game.time}
+                                        timeIsEditable
+                                        icon={EmojiFrequentIcon}
+                                    />
+                                </DateRowTime>
+                            </DateRow>
+                        </Row>
 
-                    <Footer>
-                        {updateTime && `Обновлено в ${moment(updateTime).format('HH:mm')}`}
-                        <br />
-                        <br />
-                        <ButtonGroup>
-                            {key && (
-                                <Button
-                                    type="button"
-                                    appearance="danger"
-                                    onClick={this.handleDelete}
-                                >
-                                    Отменить игру
-                                </Button>
-                            )}
+                        <Row>
+                            <RowTitle>Сегодня играют:</RowTitle>
+                            Иванов Вадим
+                            <br />
+                            Петров Олег
+                        </Row>
 
-                            <Button
-                                type="submit"
-                                appearance={key ? 'default' : 'primary'}
+                        {waitingConfirm && (
+                            <Modal
+                                appearance="danger"
+                                actions={[
+                                    { text: 'Да', onClick: this.handleConfirmModal },
+                                    { text: 'Нет', onClick: this.handleCloseModal },
+                                ]}
+                                heading="Вы уверены?"
+                                onClose={this.handleCloseModal}
                             >
-                                {key ? 'Обновить игру' : 'Создать игру'}
+                                <p>Отменяем игру на сегодня?</p>
+                            </Modal>
+                        )}
+                    </MainForm>
+                )}
+
+                <Footer>
+                    {game.updateTime && `Обновлено в ${moment(game.updateTime).format('HH:mm')}`}
+                    <br />
+                    <br />
+                    <ButtonGroup>
+                        {game.key && (
+                            <Button
+                                type="button"
+                                appearance="danger"
+                                onClick={this.handleDeleteGame}
+                            >
+                                Отменить игру
                             </Button>
-                        </ButtonGroup>
-                    </Footer>
-                </MainForm>
+                        )}
+
+                        {!game.key && (
+                            <Button
+                                type="button"
+                                onClick={this.handleCreateGame}
+                            >
+                                Создать игру
+                            </Button>
+                        )}
+                    </ButtonGroup>
+                </Footer>
             </Page>
         );
 
-        const gamers = (
+        const gamersPage = (
             <Page>
                 {gamersList && (
                     <div>
@@ -354,7 +386,7 @@ class App extends Component {
                             </MenuButton>
                         </Menu>
 
-                        {page === 'game' ? game : gamers}
+                        {page === 'game' ? gamePage : gamersPage}
                     </div>
                 )}
             </div>
