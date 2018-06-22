@@ -103,18 +103,69 @@ class App extends Component {
         loading: true,
     };
 
+    componentDidMount() {
+        gamesRef.limitToLast(1).on('value', lastGameSnapshot => {
+            this.visualUpdate();
+
+            const gameValue = lastGameSnapshot.val();
+
+            if (gameValue) {
+                const key = Object.keys(gameValue)[0];
+                const gameData = gameValue[key];
+
+                if (moment().isSame(gameData.createTime, 'day')) {
+                    this.setState({
+                        game: {
+                            ...gameData,
+                            key,
+                        },
+                        loading: false,
+                    });
+                } else {
+                    this.setState({
+                        game: {
+                            ...defaultState.game,
+                        },
+                        loading: false,
+                    });
+                }
+            } else {
+                this.setState({
+                    game: {
+                        ...defaultState.game,
+                    },
+                    loading: false,
+                });
+            }
+        });
+
+        gamersRef.on('value', gamersSnap => {
+            const gamersValue = gamersSnap.val();
+
+            this.visualUpdate();
+
+            if (gamersValue) {
+                const gamersList = Object.keys(gamersValue).map(gamerId => ({
+                    ...gamersSnap.val()[gamerId],
+                    id: gamerId,
+                }));
+
+                this.setState({
+                    gamersList,
+                });
+            } else {
+                this.setState({
+                    gamersList: [],
+                });
+            }
+        })
+    }
+
     handleTimeInput = time => {
         const {game} = this.state;
 
         firebase.database().ref().update({
             [`games/${game.key}/time`]: time,
-        });
-
-        this.setTimeUpdate();
-    };
-
-    setTimeUpdate = () => {
-        firebase.database().ref().update({
             [`games/${this.state.game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
         });
     };
@@ -191,54 +242,6 @@ class App extends Component {
         gamesRef.child(this.state.game.key).remove();
     };
 
-    componentDidMount() {
-        gamesRef.limitToLast(1).on('value', lastGameSnapshot => {
-            this.visualUpdate();
-
-            const gameValue = lastGameSnapshot.val();
-
-            if (gameValue) {
-                const key = Object.keys(gameValue)[0];
-                const gameData = gameValue[key];
-
-                if (moment().isSame(gameData.createTime, 'day')) {
-                    this.setState({
-                        game: {
-                            ...gameData,
-                            key,
-                        },
-                        loading: false,
-                    });
-                } else {
-                    this.setState(defaultState);
-                }
-            } else {
-                this.setState(defaultState);
-            }
-        });
-
-        gamersRef.on('value', gamersSnap => {
-            const gamers = gamersSnap.val();
-
-            this.visualUpdate();
-
-            if (gamers) {
-                const gamersList = Object.keys(gamers).map(gamerId => ({
-                    ...gamersSnap.val()[gamerId],
-                    id: gamerId,
-                }));
-
-                this.setState({
-                    gamersList,
-                });
-            } else {
-                this.setState({
-                    gamersList: [],
-                });
-            }
-        })
-    }
-
     render() {
         const {
             game,
@@ -252,7 +255,7 @@ class App extends Component {
         const gamePage = (
             <Page>
                 {!game.createTime && (
-                    <p>Игру еще никто не создал</p>
+                    <p>Игру еще никто не создал, или ее отменили.</p>
                 )}
 
                 {game.createTime && (
