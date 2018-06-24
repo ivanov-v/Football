@@ -1,8 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import TrashIcon from '@atlaskit/icon/glyph/trash';
+import PersonIcon from '@atlaskit/icon/glyph/person';
 
-const GamerItemStyled = styled.div`
+const Root = styled.div`
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -12,11 +13,27 @@ const GamerItemStyled = styled.div`
     margin-bottom: 6px;
 `;
 
+const Main = styled.span`
+    display: flex;
+    align-items: center;
+`;
+
+const PersonIconStyled = styled.span`
+    flex-shrink: 0;
+    margin-right: 3px;
+`;
+
 export const GamerItem = ({onClick, name}) => {
     return (
-        <GamerItemStyled>
-            <span>{name}</span>
-            <TrashIcon onClick={onClick} />
-        </GamerItemStyled>
+        <Root>
+            <Main>
+                <PersonIconStyled>
+                    <PersonIcon />
+                </PersonIconStyled>
+                <span>{name}</span>
+            </Main>
+
+            {onClick && <TrashIcon onClick={onClick} />}
+        </Root>
     );
 };

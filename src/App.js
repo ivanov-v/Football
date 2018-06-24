@@ -3,11 +3,12 @@ import firebase from './firebase';
 import moment from 'moment';
 import styled from 'styled-components';
 import './App.css';
-import Button, { ButtonGroup } from '@atlaskit/button';
+import Button from '@atlaskit/button';
 import {TimePicker} from '@atlaskit/datetime-picker';
 import EmojiFrequentIcon from '@atlaskit/icon/glyph/emoji/frequent';
 import {FieldTextStateless} from '@atlaskit/field-text';
-import Modal from '@atlaskit/modal-dialog';
+// import Modal from '@atlaskit/modal-dialog';
+import Select from '@atlaskit/select';
 import {GamerItem} from './components/GamerItem';
 import {LoaderScreen} from './components/LoaderScreen';
 import {MiniLoader} from './components/MiniLoader';
@@ -19,6 +20,8 @@ const Footer = styled.footer`
     right: 0;
     padding: 20px;
     text-align: center;
+    background-color: #fff;
+    box-shadow: 0 -1px 2px rgba(68, 68, 68, 0.32941176470588235);
 `;
 
 const Page = styled.div`
@@ -28,6 +31,7 @@ const Page = styled.div`
 
 const MainForm = styled.div`
     width: 100%;
+    padding-bottom: 70px;
 `;
 
 const Row = styled.div`
@@ -75,12 +79,21 @@ const FindField = styled.div`
     display: flex;
 `;
 
+const FindText = styled(FieldTextStateless)`
+    flex-grow: 1;
+`;
+
 const FindFieldButton = styled.div`
     margin-left: 6px;
 `;
 
+const FooterButtons = styled.div`
+    margin-top: 10px;
+`;
+
 const gamesRef = firebase.database().ref('games');
 const gamersRef = firebase.database().ref('gamers');
+const gameGamersRef = firebase.database().ref('gameGamers');
 
 const defaultState = {
     loading: false,
@@ -88,7 +101,9 @@ const defaultState = {
     page: 'game',
     newGamerName: '',
     gamersList: [],
-    waitingConfirm: false,
+    gameGamersList: [],
+    valueSelect: '',
+    // waitingConfirm: false,
     game: {
         updateTime: null,
         createTime: null,
@@ -158,7 +173,38 @@ class App extends Component {
                     gamersList: [],
                 });
             }
-        })
+        });
+
+        gameGamersRef.on('value', gameGamersSnap => {
+            if (!this.state.game.key) {
+                return;
+            }
+
+            const gameGamersValue = gameGamersSnap.val();
+
+            if (gameGamersValue) {
+                const gameGamers = Object.keys(gameGamersValue).map(gamerId => ({
+                    ...gameGamersValue[gamerId],
+                    id: gamerId,
+                }));
+
+                const gameGamersList = gameGamers.filter(gameGamers => gameGamers.gameId === this.state.game.key);
+
+                if (gameGamersList.length) {
+                    this.setState({
+                        gameGamersList,
+                    });
+                } else {
+                    this.setState({
+                        gameGamersList: [],
+                    });
+                }
+            } else {
+                this.setState({
+                    gameGamersList: [],
+                });
+            }
+        });
     }
 
     handleTimeInput = time => {
@@ -225,7 +271,7 @@ class App extends Component {
     };
 
     handleGamerDelete = id => () => {
-        gamersRef.child(id).remove();
+        gameGamersRef.child(id).remove();
     };
 
     handleCloseModal = () => {
@@ -242,6 +288,17 @@ class App extends Component {
         gamesRef.child(this.state.game.key).remove();
     };
 
+    handleChangeGamerSelect = valueSelect => {
+        this.setState({
+            valueSelect: '',
+        });
+
+        gameGamersRef.push({
+            gamerId: valueSelect.value,
+            gameId: this.state.game.key,
+        });
+    };
+
     render() {
         const {
             game,
@@ -249,13 +306,22 @@ class App extends Component {
             loader,
             gamersList,
             page,
-            waitingConfirm,
+            gameGamersList,
+            valueSelect,
         } = this.state;
+
+        const options = gamersList
+            .filter(gamer => {
+                const gameGamers = gameGamersList.find(gameGamers => gameGamers.gamerId === gamer.id);
+
+                return gameGamers ? false : true;
+            })
+            .map(gamer => ({label: gamer.name, value: gamer.id}));
 
         const gamePage = (
             <Page>
                 {!game.createTime && (
-                    <p>Игру еще никто не создал, или ее отменили.</p>
+                    <p>Игру еще никто не создал.</p>
                 )}
 
                 {game.createTime && (
@@ -281,51 +347,58 @@ class App extends Component {
 
                         <Row>
                             <RowTitle>Сегодня играют:</RowTitle>
-                            Иванов Вадим
-                            <br />
-                            Петров Олег
+                            <div>
+                                {gameGamersList.map(gameGamersItem => {
+                                    const gamer = gamersList.find(gamer => gamer.id === gameGamersItem.gamerId);
+                                    return (
+                                        gamer &&
+                                        <GamerItem
+                                            key={gameGamersItem.id}
+                                            name={gamer.name}
+                                            onClick={this.handleGamerDelete(gameGamersItem.id)}
+                                        />
+                                    );
+                                })}
+                            </div>
+
+                            <Select
+                                options={options}
+                                placeholder="Выберите игрока"
+                                isSearchable
+                                onChange={this.handleChangeGamerSelect}
+                                value={valueSelect}
+                            />
                         </Row>
 
-                        {waitingConfirm && (
-                            <Modal
-                                appearance="danger"
-                                actions={[
-                                    { text: 'Да', onClick: this.handleConfirmModal },
-                                    { text: 'Нет', onClick: this.handleCloseModal },
-                                ]}
-                                heading="Вы уверены?"
-                                onClose={this.handleCloseModal}
-                            >
-                                <p>Отменяем игру на сегодня?</p>
-                            </Modal>
-                        )}
+                        {/*{waitingConfirm && (*/}
+                            {/*<Modal*/}
+                                {/*appearance="danger"*/}
+                                {/*actions={[*/}
+                                    {/*{ text: 'Да', onClick: this.handleConfirmModal },*/}
+                                    {/*{ text: 'Нет', onClick: this.handleCloseModal },*/}
+                                {/*]}*/}
+                                {/*heading="Вы уверены?"*/}
+                                {/*onClose={this.handleCloseModal}*/}
+                            {/*>*/}
+                                {/*<p>Отменяем игру на сегодня?</p>*/}
+                            {/*</Modal>*/}
+                        {/*)}*/}
                     </MainForm>
                 )}
 
                 <Footer>
                     {game.updateTime && `Обновлено в ${moment(game.updateTime).format('HH:mm')}`}
-                    <br />
-                    <br />
-                    <ButtonGroup>
-                        {game.key && (
-                            <Button
-                                type="button"
-                                appearance="danger"
-                                onClick={this.handleDeleteGame}
-                            >
-                                Отменить игру
-                            </Button>
-                        )}
 
-                        {!game.key && (
+                    {!game.key && (
+                        <FooterButtons>
                             <Button
                                 type="button"
                                 onClick={this.handleCreateGame}
                             >
                                 Создать игру
                             </Button>
-                        )}
-                    </ButtonGroup>
+                        </FooterButtons>
+                    )}
                 </Footer>
             </Page>
         );
@@ -337,7 +410,7 @@ class App extends Component {
                         <Row>
                             <RowTitle>Имя нового игрока:</RowTitle>
                             <FindField>
-                                <FieldTextStateless
+                                <FindText
                                     type="text"
                                     onChange={this.handleChangeGamerName}
                                     value={this.state.newGamerName}
@@ -358,7 +431,10 @@ class App extends Component {
                         </Row>
                         <div>
                             {gamersList.map(gamer =>
-                                <GamerItem key={gamer.id} name={gamer.name} onClick={this.handleGamerDelete(gamer.id)} />
+                                <GamerItem
+                                    key={gamer.id}
+                                    name={gamer.name}
+                                />
                             )}
                         </div>
                     </div>
