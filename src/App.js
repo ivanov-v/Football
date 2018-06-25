@@ -7,11 +7,12 @@ import Button from '@atlaskit/button';
 import {TimePicker} from '@atlaskit/datetime-picker';
 import EmojiFrequentIcon from '@atlaskit/icon/glyph/emoji/frequent';
 import {FieldTextStateless} from '@atlaskit/field-text';
-// import Modal from '@atlaskit/modal-dialog';
+import Modal from '@atlaskit/modal-dialog';
 import Select from '@atlaskit/select';
 import {GamerItem} from './components/GamerItem';
 import {LoaderScreen} from './components/LoaderScreen';
 import {MiniLoader} from './components/MiniLoader';
+import {Progress} from './components/Progress';
 
 const Footer = styled.footer`
     position: fixed;
@@ -91,6 +92,10 @@ const FooterButtons = styled.div`
     margin-top: 10px;
 `;
 
+const ProgressStyled = styled.div`
+    margin-bottom: 10px;
+`;
+
 const gamesRef = firebase.database().ref('games');
 const gamersRef = firebase.database().ref('gamers');
 const gameGamersRef = firebase.database().ref('gameGamers');
@@ -103,7 +108,7 @@ const defaultState = {
     gamersList: [],
     gameGamersList: [],
     valueSelect: '',
-    // waitingConfirm: false,
+    waitingConfirm: false,
     game: {
         updateTime: null,
         createTime: null,
@@ -180,6 +185,8 @@ class App extends Component {
                 return;
             }
 
+            this.visualUpdate();
+
             const gameGamersValue = gameGamersSnap.val();
 
             if (gameGamersValue) {
@@ -226,12 +233,6 @@ class App extends Component {
         });
     };
 
-    handleDeleteGame = () => {
-        this.setState({
-            waitingConfirm: true,
-        });
-    };
-
     visualUpdate = () => {
         this.setState({
             loader: true,
@@ -271,7 +272,10 @@ class App extends Component {
     };
 
     handleGamerDelete = id => () => {
-        gameGamersRef.child(id).remove();
+        this.setState({
+            waitingConfirm: true,
+            gamerDelete: id,
+        });
     };
 
     handleCloseModal = () => {
@@ -285,7 +289,11 @@ class App extends Component {
             waitingConfirm: false,
         });
 
-        gamesRef.child(this.state.game.key).remove();
+        gameGamersRef.child(this.state.gamerDelete).remove();
+
+        firebase.database().ref().update({
+            [`games/${this.state.game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
+        });
     };
 
     handleChangeGamerSelect = valueSelect => {
@@ -296,6 +304,10 @@ class App extends Component {
         gameGamersRef.push({
             gamerId: valueSelect.value,
             gameId: this.state.game.key,
+        });
+
+        firebase.database().ref().update({
+            [`games/${this.state.game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
         });
     };
 
@@ -308,6 +320,7 @@ class App extends Component {
             page,
             gameGamersList,
             valueSelect,
+            waitingConfirm,
         } = this.state;
 
         const options = gamersList
@@ -317,6 +330,13 @@ class App extends Component {
                 return gameGamers ? false : true;
             })
             .map(gamer => ({label: gamer.name, value: gamer.id}));
+
+        const progress = {
+            percent: gameGamersList.length * 100 / 12,
+            caption: `${gameGamersList.length}/12`,
+        };
+
+        const isGameFull = gameGamersList.length === 12;
 
         const gamePage = (
             <Page>
@@ -347,6 +367,9 @@ class App extends Component {
 
                         <Row>
                             <RowTitle>Сегодня играют:</RowTitle>
+                            <ProgressStyled>
+                                <Progress percent={progress.percent} caption={progress.caption} />
+                            </ProgressStyled>
                             <div>
                                 {gameGamersList.map(gameGamersItem => {
                                     const gamer = gamersList.find(gamer => gamer.id === gameGamersItem.gamerId);
@@ -361,28 +384,33 @@ class App extends Component {
                                 })}
                             </div>
 
-                            <Select
-                                options={options}
-                                placeholder="Выберите игрока"
-                                isSearchable
-                                onChange={this.handleChangeGamerSelect}
-                                value={valueSelect}
-                            />
+                            {!isGameFull && (
+                                <Select
+                                    options={options}
+                                    placeholder="Добавьте игрока"
+                                    isSearchable
+                                    onChange={this.handleChangeGamerSelect}
+                                    value={valueSelect}
+                                    menuPlacement="top"
+                                    maxMenuHeight={120}
+                                    noOptionsMessage={() => 'Не найдено'}
+                                />
+                            )}
                         </Row>
 
-                        {/*{waitingConfirm && (*/}
-                            {/*<Modal*/}
-                                {/*appearance="danger"*/}
-                                {/*actions={[*/}
-                                    {/*{ text: 'Да', onClick: this.handleConfirmModal },*/}
-                                    {/*{ text: 'Нет', onClick: this.handleCloseModal },*/}
-                                {/*]}*/}
-                                {/*heading="Вы уверены?"*/}
-                                {/*onClose={this.handleCloseModal}*/}
-                            {/*>*/}
-                                {/*<p>Отменяем игру на сегодня?</p>*/}
-                            {/*</Modal>*/}
-                        {/*)}*/}
+                        {waitingConfirm && (
+                            <Modal
+                                appearance="danger"
+                                actions={[
+                                    { text: 'Да', onClick: this.handleConfirmModal },
+                                    { text: 'Нет', onClick: this.handleCloseModal },
+                                ]}
+                                heading="Вы уверены?"
+                                onClose={this.handleCloseModal}
+                            >
+                                <p>Убрать этого игрока из игры?</p>
+                            </Modal>
+                        )}
                     </MainForm>
                 )}
 
@@ -461,7 +489,7 @@ class App extends Component {
                                 onClick={this.handleClickMenu('gamers')}
                                 active={page === 'gamers'}
                             >
-                                Доступные игроки
+                                Создание игроков
                             </MenuButton>
                         </Menu>
 
