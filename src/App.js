@@ -442,6 +442,7 @@ class App extends Component {
                                     type="text"
                                     onChange={this.handleChangeGamerName}
                                     value={this.state.newGamerName}
+                                    placeholder="Фамилия Имя"
                                     isLabelHidden
                                 />
 
