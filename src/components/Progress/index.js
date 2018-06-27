@@ -10,11 +10,13 @@ const Root = styled.div`
     overflow: hidden;
 `;
 
-const Inner = styled.div`
+const Bar = styled.span`
+    display: block;
+    width: 100%;
     height: 100%;
-    width: ${props => props.percent}%;
+    transform: translateX(${props => props.percent - 100}%);
     background-color: ${props => props.percent >= 83 ? '#33cd7b' : '#FFAB00'};
-    transition: width 0.5s;
+    transition: all 0.5s;
 `;
 
 const Caption = styled.span`
@@ -33,9 +35,8 @@ const Caption = styled.span`
 export const Progress = ({caption, percent}) => {
     return (
         <Root>
-            <Inner percent={percent}>
-                <Caption percent={percent}>{caption}</Caption>
-            </Inner>
+            <Bar percent={percent} />
+            <Caption percent={percent}>{caption}</Caption>
         </Root>
     );
 };
