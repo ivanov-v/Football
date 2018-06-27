@@ -7,7 +7,3 @@ html {
 ::before {
     box-sizing: inherit;
 }
-
-.App {
-    padding: 20px;
-}

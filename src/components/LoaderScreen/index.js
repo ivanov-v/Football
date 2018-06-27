@@ -11,10 +11,11 @@ const LoaderScreenStyled = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
+    background-color: #039be5;
 `;
 
 export const LoaderScreen = () => (
     <LoaderScreenStyled>
-        <Spinner size="xlarge" />
+        <Spinner size="xlarge" invertColor />
     </LoaderScreenStyled>
 );

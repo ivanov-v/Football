@@ -21,18 +21,18 @@ const Footer = styled.footer`
     right: 0;
     padding: 20px;
     text-align: center;
-    background-color: #fff;
-    box-shadow: 0 -1px 2px rgba(68, 68, 68, 0.32941176470588235);
+    background-color: #fafafa;
 `;
 
 const Page = styled.div`
     width: 100%;
+    padding: 15px;
     padding-top: 20px;
 `;
 
 const MainForm = styled.div`
     width: 100%;
-    padding-bottom: 70px;
+    padding-bottom: 250px;
 `;
 
 const Row = styled.div`
@@ -58,26 +58,52 @@ const DateRowTime = styled.div`
 `;
 
 const Menu = styled.div`
-    border-bottom: 2px solid rgb(235, 236, 240);
     display: flex;
 `;
 
-const MenuButton = styled.button`
-    padding: 6px;
+const Header = styled.header`
+    background-color: #039be5;
+    padding: 15px;
+    padding-bottom: 0;
+`;
+
+const HeaderTitle = styled.h1`
+    color: #fff;
+    font-size: 24px;
+    margin: 0;
+    margin-bottom: 16px;
+`;
+
+const MenuButton = styled.a`
+    position: relative;
+    padding: 0;
+    padding-bottom: 14px;
     border: none;
     outline: none;
     appearance: none;
-    border-bottom: 2px solid ${props => props.active ? 'rgb(0, 82, 204)' : 'rgb(235, 236, 240)'};
     background: none;
-    margin-right: 3px;
-    margin-bottom: -2px;
-    font-size: 16px;
-    font-weight: 600;
-    color: ${props => props.active ? 'rgb(0, 82, 204)' : 'rgb(66, 82, 110)'};
+    margin-right: 12px;
+    box-shadow: none;
+    font-size: 17px;
+    color: ${props => props.active ? '#fff' : 'rgba(255, 255, 255, 0.7)'};
+    cursor: pointer;
+    
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background-color: ${props => props.active ? '#fff' : 'transparent'};
+        border-top-left-radius: 3px;
+        border-top-right-radius: 3px;
+    }
 `;
 
 const FindField = styled.div`
     display: flex;
+    align-items: center;
 `;
 
 const FindText = styled(FieldTextStateless)`
@@ -108,6 +134,7 @@ const defaultState = {
     gamersList: [],
     gameGamersList: [],
     valueSelect: '',
+    gamerDelete: '',
     waitingConfirm: false,
     game: {
         updateTime: null,
@@ -116,6 +143,13 @@ const defaultState = {
         time: '21:00',
     },
 };
+
+const getGamerDelete = state => {
+    const gameGamer = state.gameGamersList.find(gameGamer => gameGamer.id === state.gamerDelete);
+    return state.gamersList.find(gamer => gamer.id === gameGamer.gamerId);
+};
+
+const MAX_GAMERS = 12;
 
 class App extends Component {
     state = {
@@ -245,7 +279,9 @@ class App extends Component {
         }, 1800);
     };
 
-    handleClickMenu = id => () => {
+    handleClickMenu = id => evt => {
+        evt.preventDefault();
+
         if (this.state.page === id) {
             return;
         }
@@ -332,11 +368,11 @@ class App extends Component {
             .map(gamer => ({label: gamer.name, value: gamer.id}));
 
         const progress = {
-            percent: gameGamersList.length * 100 / 12,
-            caption: `${gameGamersList.length}/12`,
+            percent: gameGamersList.length * 100 / MAX_GAMERS,
+            caption: `${gameGamersList.length}/${MAX_GAMERS}`,
         };
 
-        const isGameFull = gameGamersList.length === 12;
+        const isGameFull = gameGamersList.length === MAX_GAMERS;
 
         const gamePage = (
             <Page>
@@ -408,14 +444,16 @@ class App extends Component {
                                 heading="Вы уверены?"
                                 onClose={this.handleCloseModal}
                             >
-                                <p>Убрать этого игрока из игры?</p>
+                                <p><b>{getGamerDelete(this.state).name}</b> сегодня не будет играть?</p>
                             </Modal>
                         )}
                     </MainForm>
                 )}
 
                 <Footer>
-                    {game.updateTime && `Обновлено в ${moment(game.updateTime).format('HH:mm')}`}
+                    {game.updateTime && (
+                        `Обновлено в ${moment(game.updateTime).format('HH:mm')}`
+                    )}
 
                     {!game.key && (
                         <FooterButtons>
@@ -479,20 +517,24 @@ class App extends Component {
                     <div>
                         {loader && <MiniLoader />}
 
-                        <Menu>
-                            <MenuButton
-                                onClick={this.handleClickMenu('game')}
-                                active={page === 'game'}
-                            >
-                                Игра
-                            </MenuButton>
-                            <MenuButton
-                                onClick={this.handleClickMenu('gamers')}
-                                active={page === 'gamers'}
-                            >
-                                Создание игроков
-                            </MenuButton>
-                        </Menu>
+                        <Header>
+                            <HeaderTitle>Футбол</HeaderTitle>
+
+                            <Menu>
+                                <MenuButton
+                                    onClick={this.handleClickMenu('game')}
+                                    active={page === 'game'}
+                                >
+                                    Игра
+                                </MenuButton>
+                                <MenuButton
+                                    onClick={this.handleClickMenu('gamers')}
+                                    active={page === 'gamers'}
+                                >
+                                    Создание игроков
+                                </MenuButton>
+                            </Menu>
+                        </Header>
 
                         {page === 'game' ? gamePage : gamersPage}
                     </div>

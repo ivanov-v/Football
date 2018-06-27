@@ -8,7 +8,7 @@ const Root = styled.div`
     justify-content: space-between;
     align-items: center;
     background-color: #f0f0f0;
-    padding: 5px 8px;
+    padding: 7px;
     border-radius: 4px;
     margin-bottom: 6px;
 `;

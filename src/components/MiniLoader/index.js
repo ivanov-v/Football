@@ -9,4 +9,4 @@ const MiniLoaderStyled = styled.div`
     z-index: 100;
 `;
 
-export const MiniLoader = () => <MiniLoaderStyled><Spinner size="medium" /></MiniLoaderStyled>;
+export const MiniLoader = () => <MiniLoaderStyled><Spinner size="medium" invertColor /></MiniLoaderStyled>;
