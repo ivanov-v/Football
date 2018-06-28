@@ -134,8 +134,7 @@ const defaultState = {
     gamersList: [],
     gameGamersList: [],
     valueSelect: '',
-    gamerDelete: '',
-    waitingConfirm: false,
+    gameGamerRemove: '',
     game: {
         updateTime: null,
         createTime: null,
@@ -144,8 +143,8 @@ const defaultState = {
     },
 };
 
-const getGamerDelete = state => {
-    const gameGamer = state.gameGamersList.find(gameGamer => gameGamer.id === state.gamerDelete);
+const getGamerRemove = state => {
+    const gameGamer = state.gameGamersList.find(gameGamer => gameGamer.id === state.gameGamerRemove);
     return state.gamersList.find(gamer => gamer.id === gameGamer.gamerId);
 };
 
@@ -307,25 +306,22 @@ class App extends Component {
         });
     };
 
-    handleGamerDelete = id => () => {
+    handleRemoveGameGamer = id => () => {
         this.setState({
-            waitingConfirm: true,
-            gamerDelete: id,
+            gameGamerRemove: id,
         });
     };
 
-    handleCloseModal = () => {
+    closeRemoveGameGamerModal = () => {
         this.setState({
-            waitingConfirm: false,
+            gameGamerRemove: '',
         });
     };
 
     handleConfirmModal = () => {
-        this.setState({
-            waitingConfirm: false,
-        });
+        this.closeRemoveGameGamerModal();
 
-        gameGamersRef.child(this.state.gamerDelete).remove();
+        gameGamersRef.child(this.state.gameGamerRemove).remove();
 
         firebase.database().ref().update({
             [`games/${this.state.game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
@@ -353,10 +349,10 @@ class App extends Component {
             loading,
             loader,
             gamersList,
+            gameGamerRemove,
             page,
             gameGamersList,
             valueSelect,
-            waitingConfirm,
         } = this.state;
 
         const options = gamersList
@@ -414,7 +410,7 @@ class App extends Component {
                                         <GamerItem
                                             key={gameGamersItem.id}
                                             name={gamer.name}
-                                            onClick={this.handleGamerDelete(gameGamersItem.id)}
+                                            onClick={this.handleRemoveGameGamer(gameGamersItem.id)}
                                         />
                                     );
                                 })}
@@ -434,17 +430,17 @@ class App extends Component {
                             )}
                         </Row>
 
-                        {waitingConfirm && (
+                        {gameGamerRemove && (
                             <Modal
                                 appearance="danger"
                                 actions={[
-                                    { text: 'Да', onClick: this.handleConfirmModal },
-                                    { text: 'Нет', onClick: this.handleCloseModal },
+                                    {text: 'Да', onClick: this.handleConfirmModal},
+                                    {text: 'Отмена', onClick: this.closeRemoveGameGamerModal},
                                 ]}
                                 heading="Вы уверены?"
                                 onClose={this.handleCloseModal}
                             >
-                                <p><b>{getGamerDelete(this.state).name}</b> сегодня не будет играть?</p>
+                                <p><b>{getGamerRemove(this.state).name}</b> сегодня не будет играть?</p>
                             </Modal>
                         )}
                     </MainForm>
