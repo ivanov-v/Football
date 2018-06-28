@@ -135,6 +135,7 @@ const defaultState = {
     gameGamersList: [],
     valueSelect: '',
     gameGamerRemove: '',
+    gameRemove: '',
     game: {
         updateTime: null,
         createTime: null,
@@ -266,6 +267,20 @@ class App extends Component {
         });
     };
 
+    removeGame = () => {
+        const updates = this.state.gameGamersList.reduce((acc, gameGamer) => {
+            if (this.state.game.key === gameGamer.gameId) {
+                acc[`gameGamers/${gameGamer.id}`] = null;
+            }
+
+            return acc;
+        }, {});
+
+        updates[`games/${this.state.game.key}`] = null;
+
+        firebase.database().ref().update(updates);
+    };
+
     visualUpdate = () => {
         this.setState({
             loader: true,
@@ -306,6 +321,23 @@ class App extends Component {
         });
     };
 
+    handleRemoveGame = () => {
+        this.setState({
+            gameRemove: this.state.game.key,
+        });
+    };
+
+    closeRemoveGameModal = () => {
+        this.setState({
+            gameRemove: '',
+        });
+    };
+
+    handleConfirmRemoveGameModal = () => {
+        this.closeRemoveGameModal();
+        this.removeGame();
+    };
+
     handleRemoveGameGamer = id => () => {
         this.setState({
             gameGamerRemove: id,
@@ -318,7 +350,7 @@ class App extends Component {
         });
     };
 
-    handleConfirmModal = () => {
+    handleConfirmRemoveGameGamerModal = () => {
         this.closeRemoveGameGamerModal();
 
         gameGamersRef.child(this.state.gameGamerRemove).remove();
@@ -350,6 +382,7 @@ class App extends Component {
             loader,
             gamersList,
             gameGamerRemove,
+            gameRemove,
             page,
             gameGamersList,
             valueSelect,
@@ -434,13 +467,27 @@ class App extends Component {
                             <Modal
                                 appearance="danger"
                                 actions={[
-                                    {text: 'Да', onClick: this.handleConfirmModal},
+                                    {text: 'Да', onClick: this.handleConfirmRemoveGameGamerModal},
                                     {text: 'Отмена', onClick: this.closeRemoveGameGamerModal},
                                 ]}
                                 heading="Вы уверены?"
-                                onClose={this.handleCloseModal}
+                                onClose={this.closeRemoveGameGamerModal}
                             >
                                 <p><b>{getGamerRemove(this.state).name}</b> сегодня не будет играть?</p>
+                            </Modal>
+                        )}
+
+                        {gameRemove && (
+                            <Modal
+                                appearance="danger"
+                                actions={[
+                                    {text: 'Да', onClick: this.handleConfirmRemoveGameModal},
+                                    {text: 'Отмена', onClick: this.closeRemoveGameModal},
+                                ]}
+                                heading="Вы уверены?"
+                                onClose={this.closeRemoveGameModal}
+                            >
+                                Отменить игру?
                             </Modal>
                         )}
                     </MainForm>
@@ -458,6 +505,19 @@ class App extends Component {
                                 onClick={this.handleCreateGame}
                             >
                                 Создать игру
+                            </Button>
+                        </FooterButtons>
+                    )}
+
+                    {game.key && (
+                        <FooterButtons>
+                            <Button
+                                type="button"
+                                appearance="danger"
+                                spacing="compact"
+                                onClick={this.handleRemoveGame}
+                            >
+                                Отменить игру
                             </Button>
                         </FooterButtons>
                     )}
