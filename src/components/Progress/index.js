@@ -27,6 +27,7 @@ const Caption = styled.span`
     bottom: 0;
     text-align: center;
     font-size: 15px;
+    font-weight: 500;
     line-height: 35px;
     z-index: 1;
     color: ${props => props.percent >= 55 ? '#fff' : 'rgb(68, 68, 68)'};

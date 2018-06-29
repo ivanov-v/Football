@@ -13,6 +13,7 @@ import {GamerItem} from './components/GamerItem';
 import {LoaderScreen} from './components/LoaderScreen';
 import {MiniLoader} from './components/MiniLoader';
 import {Progress} from './components/Progress';
+import {Table} from './components/Table';
 
 if (process.env.NODE_ENV === 'development') {
     console.log('development mode');
@@ -63,6 +64,15 @@ const DateRowTime = styled.div`
 
 const Menu = styled.div`
     display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+
+    &::-webkit-scrollbar {
+        display: none;
+    }
 `;
 
 const Header = styled.header`
@@ -98,7 +108,7 @@ const MenuButton = styled.a`
         bottom: 0;
         left: 0;
         right: 0;
-        height: 3px;
+        height: 4px;
         background-color: ${props => props.active ? '#fff' : 'transparent'};
         border-top-left-radius: 3px;
         border-top-right-radius: 3px;
@@ -151,6 +161,19 @@ const defaultState = {
 const getGamerRemove = state => {
     const gameGamer = state.gameGamersList.find(gameGamer => gameGamer.id === state.gameGamerRemove);
     return state.gamersList.find(gamer => gamer.id === gameGamer.gamerId);
+};
+
+const getGamersWithRating = ({gamersList, gameGamersList}) => {
+    return gamersList
+        .map(gamer => {
+            const rating = gameGamersList.filter(gameGamer => gameGamer.gamerId === gamer.id).length;
+
+            return {
+                ...gamer,
+                rating,
+            };
+        })
+        .sort((gamer1, gamer2) => gamer2.rating - gamer1.rating);
 };
 
 const MAX_GAMERS = 12;
@@ -569,6 +592,21 @@ class App extends Component {
             </Page>
         );
 
+        const ratingPage = (
+            <Page>
+                <Table
+                    titles={['N', 'Игрок', 'Игр']}
+                    items={getGamersWithRating(this.state)}
+                />
+            </Page>
+        );
+
+        const pages = {
+            game: gamePage,
+            gamers: gamersPage,
+            rating: ratingPage,
+        };
+
         return (
             <div className="App">
                 {loading && <LoaderScreen />}
@@ -593,10 +631,16 @@ class App extends Component {
                                 >
                                     Создание игроков
                                 </MenuButton>
+                                <MenuButton
+                                    onClick={this.handleClickMenu('rating')}
+                                    active={page === 'rating'}
+                                >
+                                    Рейтинг
+                                </MenuButton>
                             </Menu>
                         </Header>
 
-                        {page === 'game' ? gamePage : gamersPage}
+                        {pages[page]}
                     </div>
                 )}
             </div>
