@@ -176,6 +176,10 @@ const getGamersWithRating = ({gamersList, gameGamersList}) => {
         .sort((gamer1, gamer2) => gamer2.rating - gamer1.rating);
 };
 
+const getGameGamersForGame = state => {
+    return state.gameGamersList.filter(gameGamers => gameGamers.gameId === state.game.key);
+};
+
 const MAX_GAMERS = 12;
 
 class App extends Component {
@@ -242,10 +246,6 @@ class App extends Component {
         });
 
         gameGamersRef.on('value', gameGamersSnap => {
-            if (!this.state.game.key) {
-                return;
-            }
-
             this.visualUpdate();
 
             const gameGamersValue = gameGamersSnap.val();
@@ -256,11 +256,9 @@ class App extends Component {
                     id: gamerId,
                 }));
 
-                const gameGamersList = gameGamers.filter(gameGamers => gameGamers.gameId === this.state.game.key);
-
-                if (gameGamersList.length) {
+                if (gameGamers.length) {
                     this.setState({
-                        gameGamersList,
+                        gameGamersList: gameGamers,
                     });
                 } else {
                     this.setState({
@@ -280,7 +278,7 @@ class App extends Component {
 
         firebase.database().ref().update({
             [`games/${game.key}/time`]: time,
-            [`games/${this.state.game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
+            [`games/${game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
         });
     };
 
@@ -295,15 +293,17 @@ class App extends Component {
     };
 
     removeGame = () => {
-        const updates = this.state.gameGamersList.reduce((acc, gameGamer) => {
-            if (this.state.game.key === gameGamer.gameId) {
+        const {game} = this.state;
+
+        const updates = getGameGamersForGame(this.state).reduce((acc, gameGamer) => {
+            if (game.key === gameGamer.gameId) {
                 acc[`gameGamers/${gameGamer.id}`] = null;
             }
 
             return acc;
         }, {});
 
-        updates[`games/${this.state.game.key}`] = null;
+        updates[`games/${game.key}`] = null;
 
         firebase.database().ref().update(updates);
     };
@@ -411,24 +411,25 @@ class App extends Component {
             gameGamerRemove,
             gameRemove,
             page,
-            gameGamersList,
             valueSelect,
         } = this.state;
 
+        const gameGamersForGame = getGameGamersForGame(this.state);
+
         const options = gamersList
             .filter(gamer => {
-                const gameGamers = gameGamersList.find(gameGamers => gameGamers.gamerId === gamer.id);
+                const gameGamers = gameGamersForGame.find(gameGamers => gameGamers.gamerId === gamer.id);
 
-                return gameGamers ? false : true;
+                return !gameGamers;
             })
             .map(gamer => ({label: gamer.name, value: gamer.id}));
 
         const progress = {
-            percent: gameGamersList.length * 100 / MAX_GAMERS,
-            caption: `${gameGamersList.length}/${MAX_GAMERS}`,
+            percent: gameGamersForGame.length * 100 / MAX_GAMERS,
+            caption: `${gameGamersForGame.length}/${MAX_GAMERS}`,
         };
 
-        const isGameFull = gameGamersList.length === MAX_GAMERS;
+        const isGameFull = gameGamersForGame.length === MAX_GAMERS;
 
         const gamePage = (
             <Page>
@@ -463,7 +464,7 @@ class App extends Component {
                                 <Progress percent={progress.percent} caption={progress.caption} />
                             </ProgressStyled>
                             <div>
-                                {gameGamersList.map(gameGamersItem => {
+                                {gameGamersForGame.map(gameGamersItem => {
                                     const gamer = gamersList.find(gamer => gamer.id === gameGamersItem.gamerId);
                                     return (
                                         gamer &&
@@ -479,13 +480,13 @@ class App extends Component {
                             {!isGameFull && (
                                 <Select
                                     options={options}
-                                    placeholder="Добавьте игрока"
+                                    placeholder={`Добавьте ${gameGamersForGame.length + 1}-го игрока`}
                                     isSearchable
                                     onChange={this.handleChangeGamerSelect}
                                     value={valueSelect}
                                     menuPlacement="top"
                                     maxMenuHeight={120}
-                                    noOptionsMessage={() => 'Не найдено'}
+                                    noOptionsMessage={() => 'Игрок не найден'}
                                 />
                             )}
                         </Row>
@@ -629,7 +630,7 @@ class App extends Component {
                                     onClick={this.handleClickMenu('gamers')}
                                     active={page === 'gamers'}
                                 >
-                                    Создание игроков
+                                    Игроки
                                 </MenuButton>
                                 <MenuButton
                                     onClick={this.handleClickMenu('rating')}
