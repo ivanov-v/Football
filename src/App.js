@@ -14,6 +14,10 @@ import {LoaderScreen} from './components/LoaderScreen';
 import {MiniLoader} from './components/MiniLoader';
 import {Progress} from './components/Progress';
 
+if (process.env.NODE_ENV === 'development') {
+    console.log('development mode');
+}
+
 const Footer = styled.footer`
     position: fixed;
     bottom: 0;
