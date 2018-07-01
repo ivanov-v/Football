@@ -14,6 +14,7 @@ import {LoaderScreen} from './components/LoaderScreen';
 import {MiniLoader} from './components/MiniLoader';
 import {Progress} from './components/Progress';
 import {Table} from './components/Table';
+import just from './just.png';
 
 if (process.env.NODE_ENV === 'development') {
     console.log('development mode');
@@ -24,7 +25,7 @@ const Footer = styled.footer`
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 20px;
+    padding: 15px;
     text-align: center;
     background-color: #fafafa;
 `;
@@ -135,6 +136,25 @@ const FooterButtons = styled.div`
 const ProgressStyled = styled.div`
     margin-bottom: 10px;
 `;
+
+const Empty = styled.div`
+    padding: 30px 15px;
+`;
+
+const EmptyTitle = styled.div`
+    font-weight: 700;
+    text-align: center;
+    font-size: 20px;
+    margin-bottom: 18px;
+`;
+
+const EmptyImage = styled.img`
+    display: block;
+    width: 85%;
+    max-width: 290px;
+    margin: 0 auto;
+`;
+
 
 const gamesRef = firebase.database().ref('games');
 const gamersRef = firebase.database().ref('gamers');
@@ -434,7 +454,13 @@ class App extends Component {
         const gamePage = (
             <Page>
                 {!game.createTime && (
-                    <p>Игру еще никто не создал.</p>
+                    <Empty>
+                        <EmptyTitle>
+                            Игру еще никто не создал
+                        </EmptyTitle>
+
+                        <EmptyImage src={just} />
+                    </Empty>
                 )}
 
                 {game.createTime && (
@@ -530,6 +556,7 @@ class App extends Component {
                         <FooterButtons>
                             <Button
                                 type="button"
+                                appearance="primary"
                                 onClick={this.handleCreateGame}
                             >
                                 Создать игру
