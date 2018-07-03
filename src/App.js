@@ -16,10 +16,6 @@ import {Progress} from './components/Progress';
 import {Table} from './components/Table';
 import just from './just.png';
 
-if (process.env.NODE_ENV === 'development') {
-    console.log('development mode');
-}
-
 const Footer = styled.footer`
     position: fixed;
     bottom: 0;
@@ -155,6 +151,10 @@ const EmptyImage = styled.img`
     margin: 0 auto;
 `;
 
+const GamerExistsAlert = styled.div`
+    color: #FF5630;
+    margin-bottom: 12px;
+`;
 
 const gamesRef = firebase.database().ref('games');
 const gamersRef = firebase.database().ref('gamers');
@@ -183,8 +183,8 @@ const getGamerRemove = state => {
     return state.gamersList.find(gamer => gamer.id === gameGamer.gamerId);
 };
 
-const getGamersWithRating = ({gamersList, gameGamersList}) => {
-    return gamersList
+const getGamersWithRating = ({gamersList, gameGamersList}) =>
+    gamersList
         .map(gamer => {
             const rating = gameGamersList.filter(gameGamer => gameGamer.gamerId === gamer.id).length;
 
@@ -194,11 +194,12 @@ const getGamersWithRating = ({gamersList, gameGamersList}) => {
             };
         })
         .sort((gamer1, gamer2) => gamer2.rating - gamer1.rating);
-};
 
-const getGameGamersForGame = state => {
-    return state.gameGamersList.filter(gameGamers => gameGamers.gameId === state.game.key);
-};
+const getGameGamersForGame = state =>
+    state.gameGamersList.filter(gameGamers => gameGamers.gameId === state.game.key);
+
+const isGamerExists = ({gamersList, newGamerName}) =>
+    Boolean(gamersList.find(gamer => gamer.name.toLowerCase() === newGamerName.toLowerCase()));
 
 const MAX_GAMERS = 12;
 
@@ -451,6 +452,8 @@ class App extends Component {
 
         const isGameFull = gameGamersForGame.length === MAX_GAMERS;
 
+        const gamerExists = isGamerExists(this.state);
+
         const gamePage = (
             <Page>
                 {!game.createTime && (
@@ -597,7 +600,7 @@ class App extends Component {
 
                                 <FindFieldButton>
                                     <Button
-                                        isDisabled={!this.state.newGamerName}
+                                        isDisabled={!this.state.newGamerName || gamerExists}
                                         onClick={this.handleAddGamer}
                                         type="button"
                                         appearance='primary'
@@ -607,6 +610,11 @@ class App extends Component {
                                 </FindFieldButton>
                             </FindField>
                         </Row>
+
+                        {gamerExists && (
+                            <GamerExistsAlert>Такой игрок существует</GamerExistsAlert>
+                        )}
+
                         <div>
                             {gamersList.map(gamer =>
                                 <GamerItem
