@@ -1,7 +1,19 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, {keyframes} from 'styled-components';
 import TrashIcon from '@atlaskit/icon/glyph/trash';
 import PersonIcon from '@atlaskit/icon/glyph/person';
+
+const translate = keyframes`
+    from {
+        transform: translateX(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+`;
 
 const Root = styled.div`
     display: flex;
@@ -11,6 +23,7 @@ const Root = styled.div`
     padding: 7px;
     border-radius: 4px;
     margin-bottom: 6px;
+    ${({hasAnimation}) => hasAnimation ? `animation: ${translate} 0.5s ease;` : ''}
 `;
 
 const Main = styled.span`
@@ -24,8 +37,10 @@ const PersonIconStyled = styled.span`
 `;
 
 export const GamerItem = ({onClick, name}) => {
+    const hasAnimation = Boolean(onClick);
+
     return (
-        <Root>
+        <Root hasAnimation={hasAnimation}>
             <Main>
                 <PersonIconStyled>
                     <PersonIcon />

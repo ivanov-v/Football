@@ -126,7 +126,7 @@ const FindFieldButton = styled.div`
 `;
 
 const FooterButtons = styled.div`
-    margin-top: 10px;
+    margin-top: 12px;
 `;
 
 const ProgressStyled = styled.div`
@@ -156,26 +156,21 @@ const GamerExistsAlert = styled.div`
     margin-bottom: 12px;
 `;
 
+const EventText = styled.div`
+    font-size: 13px;
+`;
+
 const gamesRef = firebase.database().ref('games');
 const gamersRef = firebase.database().ref('gamers');
 const gameGamersRef = firebase.database().ref('gameGamers');
 
-const defaultState = {
-    loading: false,
-    loader: false,
-    page: 'game',
-    newGamerName: '',
-    gamersList: [],
-    gameGamersList: [],
-    valueSelect: '',
-    gameGamerRemove: '',
-    gameRemove: '',
-    game: {
-        updateTime: null,
-        createTime: null,
-        key: null,
-        time: '21:00',
-    },
+const MAX_GAMERS = 12;
+
+const EVENTS_TEXTS = {
+    CHANGE_TIME: 'изменено время',
+    ADD_GAMER: 'добавлен',
+    CREATE_GAME: 'создана игра',
+    DELETE_GAMER: 'ливнул',
 };
 
 const getGamerRemove = state => {
@@ -201,7 +196,47 @@ const getGameGamersForGame = state =>
 const isGamerExists = ({gamersList, newGamerName}) =>
     Boolean(gamersList.find(gamer => gamer.name.toLowerCase() === newGamerName.toLowerCase()));
 
-const MAX_GAMERS = 12;
+const getGamer = (state, id) => state.gamersList.find(gamer => gamer.id === id);
+
+const getEventUpdatesText = state => {
+    const {lastEvent} = state.game;
+    const timestamp = moment(lastEvent.timestamp).format('HH:mm');
+    const eventText = EVENTS_TEXTS[lastEvent.type];
+
+    switch (lastEvent.type) {
+        case 'CHANGE_TIME':
+            return <EventText>В <b>{timestamp}</b> {eventText} на <b>{lastEvent.time}</b></EventText>;
+
+        case 'DELETE_GAMER':
+        case 'ADD_GAMER':
+            const gamerName = getGamer(state, lastEvent.gamerId).name;
+
+            return <EventText>В <b>{timestamp}</b> {eventText} <b>{gamerName}</b></EventText>;
+
+        case 'CREATE_GAME':
+            return <EventText>В <b>{timestamp}</b> {eventText}</EventText>;
+
+        default:
+            return null;
+    }
+};
+
+const defaultState = {
+    loading: false,
+    loader: false,
+    page: 'game',
+    newGamerName: '',
+    gamersList: [],
+    gameGamersList: [],
+    valueSelect: '',
+    gameGamerRemove: '',
+    gameRemove: '',
+    game: {
+        createTime: null,
+        key: null,
+        time: '21:00',
+    },
+};
 
 class App extends Component {
     state = {
@@ -296,20 +331,30 @@ class App extends Component {
 
     handleTimeInput = time => {
         const {game} = this.state;
+        const timestamp = firebase.database.ServerValue.TIMESTAMP;
 
         firebase.database().ref().update({
             [`games/${game.key}/time`]: time,
-            [`games/${game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
+            [`games/${game.key}/lastEvent`]: {
+                type: 'CHANGE_TIME',
+                timestamp,
+                time,
+            },
         });
     };
 
     handleCreateGame = () => {
         const timestamp = firebase.database.ServerValue.TIMESTAMP;
+        const {game} = this.state;
 
         gamesRef.push({
-            updateTime: timestamp,
             createTime: timestamp,
-            time: this.state.game.time,
+            time: game.time,
+            lastEvent: {
+                type: 'CREATE_GAME',
+                timestamp,
+                time: game.time,
+            },
         });
     };
 
@@ -399,12 +444,18 @@ class App extends Component {
     };
 
     handleConfirmRemoveGameGamerModal = () => {
+        const {game} = this.state;
+
         this.closeRemoveGameGamerModal();
 
         gameGamersRef.child(this.state.gameGamerRemove).remove();
 
         firebase.database().ref().update({
-            [`games/${this.state.game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
+            [`games/${game.key}/lastEvent`]: {
+                type: 'DELETE_GAMER',
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                gamerId: getGamerRemove(this.state).id,
+            },
         });
     };
 
@@ -419,7 +470,11 @@ class App extends Component {
         });
 
         firebase.database().ref().update({
-            [`games/${this.state.game.key}/updateTime`]: firebase.database.ServerValue.TIMESTAMP,
+            [`games/${this.state.game.key}/lastEvent`]: {
+                type: 'ADD_GAMER',
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                gamerId: valueSelect.value,
+            },
         });
     };
 
@@ -472,7 +527,7 @@ class App extends Component {
                             <RowTitle>Дата игры:</RowTitle>
                             <DateRow>
                                 <DateRowDate>
-                                    {game.createTime && moment(game.createTime).format('D.MM')}
+                                    {moment(game.createTime).format('D.MM')}
                                 </DateRowDate>
                                 <DateRowTime>
                                     <TimePicker
@@ -551,9 +606,7 @@ class App extends Component {
                 )}
 
                 <Footer>
-                    {game.updateTime && (
-                        `Обновлено в ${moment(game.updateTime).format('HH:mm')}`
-                    )}
+                    {(game.key && gamersList.length > 0) && getEventUpdatesText(this.state)}
 
                     {!game.key && (
                         <FooterButtons>
