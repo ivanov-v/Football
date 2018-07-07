@@ -459,10 +459,14 @@ class App extends Component {
         });
     };
 
-    handleChangeGamerSelect = valueSelect => {
+    handleChangeGamerSelect = (valueSelect, {action}) => {
         this.setState({
             valueSelect: '',
         });
+        
+        if (action === 'pop-value') {
+            return;
+        }
 
         gameGamersRef.push({
             gamerId: valueSelect.value,
