@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import firebase from './firebase';
 import moment from 'moment';
 import styled from 'styled-components';
-import './App.css';
 import Button from '@atlaskit/button';
 import {TimePicker} from '@atlaskit/datetime-picker';
 import EmojiFrequentIcon from '@atlaskit/icon/glyph/emoji/frequent';
@@ -80,9 +79,9 @@ const Header = styled.header`
 
 const HeaderTitle = styled.h1`
     color: #fff;
-    font-size: 24px;
+    font-size: 22px;
     margin: 0;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 `;
 
 const MenuButton = styled.a`
@@ -95,7 +94,7 @@ const MenuButton = styled.a`
     background: none;
     margin-right: 12px;
     box-shadow: none;
-    font-size: 17px;
+    font-size: 18px;
     color: ${props => props.active ? '#fff' : 'rgba(255, 255, 255, 0.7)'};
     cursor: pointer;
     
@@ -130,7 +129,7 @@ const FooterButtons = styled.div`
 `;
 
 const ProgressStyled = styled.div`
-    margin-bottom: 10px;
+    margin-bottom: 12px;
 `;
 
 const Empty = styled.div`
@@ -158,6 +157,10 @@ const GamerExistsAlert = styled.div`
 
 const EventText = styled.div`
     font-size: 13px;
+`;
+
+const GamerSearch = styled.div`
+    margin-bottom: 12px;
 `;
 
 const gamesRef = firebase.database().ref('games');
@@ -551,6 +554,22 @@ class App extends Component {
                             <ProgressStyled>
                                 <Progress percent={progress.percent} caption={progress.caption} />
                             </ProgressStyled>
+
+                            {!isGameFull && (
+                                <GamerSearch>
+                                    <Select
+                                        options={options}
+                                        placeholder={`Добавить ${gameGamersForGame.length + 1}-го игрока`}
+                                        isSearchable
+                                        onChange={this.handleChangeGamerSelect}
+                                        value={valueSelect}
+                                        menuPlacement="bottom"
+                                        maxMenuHeight={120}
+                                        noOptionsMessage={() => 'Игрок не найден'}
+                                    />
+                                </GamerSearch>
+                            )}
+
                             <div>
                                 {gameGamersForGame.map(gameGamersItem => {
                                     const gamer = gamersList.find(gamer => gamer.id === gameGamersItem.gamerId);
@@ -564,19 +583,6 @@ class App extends Component {
                                     );
                                 })}
                             </div>
-
-                            {!isGameFull && (
-                                <Select
-                                    options={options}
-                                    placeholder={`Добавьте ${gameGamersForGame.length + 1}-го игрока`}
-                                    isSearchable
-                                    onChange={this.handleChangeGamerSelect}
-                                    value={valueSelect}
-                                    menuPlacement="top"
-                                    maxMenuHeight={120}
-                                    noOptionsMessage={() => 'Игрок не найден'}
-                                />
-                            )}
                         </Row>
 
                         {gameGamerRemove && (

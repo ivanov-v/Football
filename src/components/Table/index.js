@@ -15,10 +15,6 @@ const Root = styled.table`
     }
 `;
 
-const Row = styled.tr`
-    background-color: ${props => props.active ? 'rgba(3, 155, 229, 0.09)' : 'transparent'};
-`;
-
 export const Table = ({titles, items}) => {
     return (
         <Root>
@@ -36,11 +32,11 @@ export const Table = ({titles, items}) => {
                     const position = index + 1;
 
                     return (
-                        <Row key={item.id} active={position <= 12}>
+                        <tr key={item.id}>
                             <td>{position}</td>
                             <td>{item.name}</td>
                             <td>{item.rating}</td>
-                        </Row>
+                        </tr>
                     );
                 })}
             </tbody>
