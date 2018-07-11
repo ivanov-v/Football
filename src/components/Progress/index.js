@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PureComponent} from 'react';
 import styled from 'styled-components';
 
 const Root = styled.div`
@@ -33,11 +33,15 @@ const Caption = styled.span`
     color: ${props => props.percent >= 55 ? '#fff' : 'rgb(68, 68, 68)'};
 `;
 
-export const Progress = ({caption, percent}) => {
-    return (
-        <Root>
-            <Bar percent={percent} />
-            <Caption percent={percent}>{caption}</Caption>
-        </Root>
-    );
-};
+export class Progress extends PureComponent {
+    render() {
+        const {caption, percent} = this.props;
+
+        return (
+            <Root>
+                <Bar percent={percent} />
+                <Caption percent={percent}>{caption}</Caption>
+            </Root>
+        );
+    }
+}

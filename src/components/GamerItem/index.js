@@ -1,7 +1,7 @@
 import React, {PureComponent} from 'react';
 import styled, {keyframes} from 'styled-components';
-import TrashIcon from '@atlaskit/icon/glyph/trash';
 import PersonIcon from '@atlaskit/icon/glyph/person';
+import EditorErrorIcon from '@atlaskit/icon/glyph/editor/error';
 
 const translate = keyframes`
     from {
@@ -50,7 +50,7 @@ export class GamerItem extends PureComponent {
                     <span>{name}</span>
                 </Main>
 
-                {onClick && <TrashIcon onClick={onClick} />}
+                {onClick && <EditorErrorIcon onClick={onClick} />}
             </Root>
         );
     }
