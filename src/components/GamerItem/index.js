@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {PureComponent} from 'react';
 import styled, {keyframes} from 'styled-components';
 import TrashIcon from '@atlaskit/icon/glyph/trash';
 import PersonIcon from '@atlaskit/icon/glyph/person';
@@ -36,19 +36,22 @@ const PersonIconStyled = styled.span`
     margin-right: 3px;
 `;
 
-export const GamerItem = ({onClick, name}) => {
-    const hasAnimation = Boolean(onClick);
+export class GamerItem extends PureComponent {
+    render() {
+        const {onClick, name} = this.props;
+        const hasAnimation = Boolean(onClick);
 
-    return (
-        <Root hasAnimation={hasAnimation}>
-            <Main>
-                <PersonIconStyled>
-                    <PersonIcon />
-                </PersonIconStyled>
-                <span>{name}</span>
-            </Main>
+        return (
+            <Root hasAnimation={hasAnimation}>
+                <Main>
+                    <PersonIconStyled>
+                        <PersonIcon />
+                    </PersonIconStyled>
+                    <span>{name}</span>
+                </Main>
 
-            {onClick && <TrashIcon onClick={onClick} />}
-        </Root>
-    );
-};
+                {onClick && <TrashIcon onClick={onClick} />}
+            </Root>
+        );
+    }
+}
