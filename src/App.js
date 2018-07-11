@@ -72,7 +72,7 @@ const Menu = styled.div`
 `;
 
 const Header = styled.header`
-    background-color: #039be5;
+    background-image: linear-gradient( 111.5deg, rgba(20,100,196,1) 0.4%, rgba(33,152,214,1) 100.2% );
     padding: 15px;
     padding-bottom: 0;
 `;

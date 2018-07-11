@@ -11,7 +11,7 @@ const LoaderScreenStyled = styled.div`
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #039be5;
+    background-image: linear-gradient( 111.5deg, rgba(20,100,196,1) 0.4%, rgba(33,152,214,1) 100.2% );
 `;
 
 export const LoaderScreen = () => (
