@@ -13,6 +13,7 @@ import {LoaderScreen} from './components/LoaderScreen';
 import {MiniLoader} from './components/MiniLoader';
 import {Progress} from './components/Progress';
 import {Table} from './components/Table';
+import {Ball} from './components/Ball';
 import just from './just.png';
 
 const Footer = styled.footer`
@@ -72,16 +73,26 @@ const Menu = styled.div`
 `;
 
 const Header = styled.header`
+    position: relative;
+    overflow: hidden;
     background-image: linear-gradient( 111.5deg, rgba(20,100,196,1) 0.4%, rgba(33,152,214,1) 100.2% );
     padding: 15px;
     padding-bottom: 0;
 `;
 
+const HeaderBall = styled(Ball)`
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 100px;
+`;
+
 const HeaderTitle = styled.h1`
     color: #fff;
-    font-size: 22px;
+    font-size: 25px;
+    font-weight: 500;
     margin: 0;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 `;
 
 const MenuButton = styled.a`
@@ -737,6 +748,8 @@ class App extends Component {
                                     Рейтинг
                                 </MenuButton>
                             </Menu>
+
+                            <HeaderBall />
                         </Header>
 
                         {pages[page]}

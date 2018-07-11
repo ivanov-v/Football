@@ -4,9 +4,9 @@ import Spinner from '@atlaskit/spinner';
 
 const MiniLoaderStyled = styled.div`
     position: fixed;
-    top: 17px;
-    right: 20px;
+    top: 21px;
+    right: 22px;
     z-index: 100;
 `;
 
-export const MiniLoader = () => <MiniLoaderStyled><Spinner size="medium" invertColor /></MiniLoaderStyled>;
+export const MiniLoader = () => <MiniLoaderStyled><Spinner size="small" invertColor /></MiniLoaderStyled>;

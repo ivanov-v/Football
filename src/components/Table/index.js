@@ -11,7 +11,7 @@ const Root = styled.table`
     td,
     th {
         padding: 8px 12px;
-        border: 1px solid rgba(0, 0, 0, 0.12);
+        border: 1px solid #e7e7e7;
     }
 `;
 
