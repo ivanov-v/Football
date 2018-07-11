@@ -19,16 +19,8 @@ const LoaderBall = styled(Ball)`
     width: 90px;
 `;
 
-const Title = styled.div`
-    font-weight: 500;
-    font-size: 35px;
-    color: #fff;
-    margin: 10px 0;
-`;
-
 export const LoaderScreen = () => (
     <LoaderScreenStyled>
         <LoaderBall loading />
-        <Title>Футбол</Title>
     </LoaderScreenStyled>
 );
