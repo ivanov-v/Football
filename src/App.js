@@ -10,7 +10,6 @@ import Modal from '@atlaskit/modal-dialog';
 import Select from '@atlaskit/select';
 import {GamerItem} from './components/GamerItem';
 import {LoaderScreen} from './components/LoaderScreen';
-import {MiniLoader} from './components/MiniLoader';
 import {Progress} from './components/Progress';
 import {Table} from './components/Table';
 import {Ball} from './components/Ball';
@@ -84,7 +83,7 @@ const HeaderBall = styled(Ball)`
     position: absolute;
     top: -20px;
     right: -20px;
-    width: 100px;
+    width: 90px;
 `;
 
 const HeaderTitle = styled.h1`
@@ -723,8 +722,6 @@ class App extends Component {
 
                 {!loading && (
                     <div>
-                        {loader && <MiniLoader />}
-
                         <Header>
                             <HeaderTitle>Футбол</HeaderTitle>
 
@@ -749,7 +746,7 @@ class App extends Component {
                                 </MenuButton>
                             </Menu>
 
-                            <HeaderBall />
+                            <HeaderBall loading={loader} />
                         </Header>
 
                         {pages[page]}

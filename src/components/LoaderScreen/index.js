@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import Spinner from '@atlaskit/spinner';
+import {Ball} from '../Ball';
 
 const LoaderScreenStyled = styled.div`
     position: fixed;
@@ -9,13 +9,26 @@ const LoaderScreenStyled = styled.div`
     right: 0;
     bottom: 0;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    background-image: linear-gradient( 111.5deg, rgba(20,100,196,1) 0.4%, rgba(33,152,214,1) 100.2% );
+    background-image: linear-gradient(111.5deg, rgba(20,100,196,1) 0.4%, rgba(33,152,214,1) 100.2%);
+`;
+
+const LoaderBall = styled(Ball)`
+    width: 90px;
+`;
+
+const Title = styled.div`
+    font-weight: 500;
+    font-size: 35px;
+    color: #fff;
+    margin: 10px 0;
 `;
 
 export const LoaderScreen = () => (
     <LoaderScreenStyled>
-        <Spinner size="xlarge" invertColor />
+        <LoaderBall loading />
+        <Title>Футбол</Title>
     </LoaderScreenStyled>
 );
