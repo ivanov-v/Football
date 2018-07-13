@@ -13,16 +13,19 @@ import {LoaderScreen} from './components/LoaderScreen';
 import {Progress} from './components/Progress';
 import {Table} from './components/Table';
 import {Ball} from './components/Ball';
-import just from './just.png';
+import {Button as ButtonEx} from './components/Button';
+import soccer from './soccer.svg';
 
 const Footer = styled.footer`
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 15px;
+    left: 15px;
+    right: 15px;
     padding: 15px;
     text-align: center;
-    background-color: #fafafa;
+    border-radius: 3px;
+    box-shadow: 0 0 10px 0 rgba(223, 223, 223, 0.7);
+    background-color: #fff;
 `;
 
 const Page = styled.div`
@@ -135,7 +138,7 @@ const FindFieldButton = styled.div`
 `;
 
 const FooterButtons = styled.div`
-    margin-top: 12px;
+    margin-top: 0;
 `;
 
 const ProgressStyled = styled.div`
@@ -143,26 +146,22 @@ const ProgressStyled = styled.div`
 `;
 
 const Empty = styled.div`
-    padding: 30px 15px;
-`;
-
-const EmptyTitle = styled.div`
-    font-weight: 700;
-    text-align: center;
-    font-size: 20px;
-    margin-bottom: 18px;
+    padding: 70px 15px;
 `;
 
 const EmptyImage = styled.img`
     display: block;
-    width: 85%;
-    max-width: 290px;
+    max-width: 200px;
     margin: 0 auto;
 `;
 
 const GamerExistsAlert = styled.div`
     color: #FF5630;
     margin-bottom: 12px;
+`;
+
+const EventTextWrapper = styled.div`
+    margin-bottom: 10px;
 `;
 
 const EventText = styled.div`
@@ -530,11 +529,7 @@ class App extends Component {
             <Page>
                 {!game.createTime && (
                     <Empty>
-                        <EmptyTitle>
-                            Игру еще никто не создал
-                        </EmptyTitle>
-
-                        <EmptyImage src={just} />
+                        <EmptyImage src={soccer} />
                     </Empty>
                 )}
 
@@ -626,17 +621,15 @@ class App extends Component {
                 )}
 
                 <Footer>
-                    {(game.key && gamersList.length > 0) && getEventUpdatesText(this.state)}
+                    {(game.key && gamersList.length > 0) && (
+                        <EventTextWrapper>
+                            {getEventUpdatesText(this.state)}
+                        </EventTextWrapper>
+                    )}
 
                     {!game.key && (
                         <FooterButtons>
-                            <Button
-                                type="button"
-                                appearance="primary"
-                                onClick={this.handleCreateGame}
-                            >
-                                Создать игру
-                            </Button>
+                            <ButtonEx onClick={this.handleCreateGame}>Создать игру</ButtonEx>
                         </FooterButtons>
                     )}
 
@@ -672,14 +665,13 @@ class App extends Component {
                                 />
 
                                 <FindFieldButton>
-                                    <Button
-                                        isDisabled={!this.state.newGamerName || gamerExists}
+                                    <ButtonEx
+                                        disabled={!this.state.newGamerName || gamerExists}
                                         onClick={this.handleAddGamer}
-                                        type="button"
-                                        appearance='primary'
+                                        fit
                                     >
                                         Создать
-                                    </Button>
+                                    </ButtonEx>
                                 </FindFieldButton>
                             </FindField>
                         </Row>
