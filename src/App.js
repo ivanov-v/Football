@@ -13,17 +13,16 @@ import {LoaderScreen} from './components/LoaderScreen';
 import {Progress} from './components/Progress';
 import {Table} from './components/Table';
 import {Ball} from './components/Ball';
-import {Button as ButtonEx} from './components/Button';
+import {ButtonEx} from './components/ButtonEx';
 import soccer from './soccer.svg';
 
 const Footer = styled.footer`
     position: fixed;
-    bottom: 15px;
-    left: 15px;
-    right: 15px;
+    bottom: 0;
+    left: 0;
+    right: 0;
     padding: 15px;
     text-align: center;
-    border-radius: 3px;
     box-shadow: 0 0 10px 0 rgba(223, 223, 223, 0.7);
     background-color: #fff;
 `;
@@ -39,13 +38,19 @@ const MainForm = styled.div`
     padding-bottom: 250px;
 `;
 
-const Row = styled.div`
-    margin-bottom: 10px;
-`;
-
 const RowTitle = styled.div`
     font-weight: 600;
-    margin-bottom: 6px;
+`;
+
+const Row = styled.div`
+    margin-bottom: 10px;
+    display: ${props => props.noWrap ? 'flex' : 'block'};
+    align-items: center;
+    
+    ${RowTitle} {
+        margin-right: ${props => props.noWrap ? '7px' : '0'};
+        margin-bottom: ${props => props.noWrap ? '0' : '6px'};
+    }
 `;
 
 const DateRow = styled.div`
@@ -77,7 +82,7 @@ const Menu = styled.div`
 const Header = styled.header`
     position: relative;
     overflow: hidden;
-    background-image: linear-gradient( 111.5deg, rgba(20,100,196,1) 0.4%, rgba(33,152,214,1) 100.2% );
+    background-image: linear-gradient(111.5deg, rgba(20,100,196,1) 0.4%, rgba(33,152,214,1) 100.2%);
     padding: 15px;
     padding-bottom: 0;
 `;
@@ -86,7 +91,7 @@ const HeaderBall = styled(Ball)`
     position: absolute;
     top: -20px;
     right: -20px;
-    width: 90px;
+    width: 80px;
 `;
 
 const HeaderTitle = styled.h1`
@@ -146,12 +151,12 @@ const ProgressStyled = styled.div`
 `;
 
 const Empty = styled.div`
-    padding: 70px 15px;
+    padding: 50px 15px;
 `;
 
 const EmptyImage = styled.img`
     display: block;
-    max-width: 200px;
+    max-width: 180px;
     margin: 0 auto;
 `;
 
@@ -535,7 +540,7 @@ class App extends Component {
 
                 {game.createTime && (
                     <MainForm>
-                        <Row>
+                        <Row noWrap>
                             <RowTitle>Дата игры:</RowTitle>
                             <DateRow>
                                 <DateRowDate>
@@ -715,7 +720,7 @@ class App extends Component {
                 {!loading && (
                     <div>
                         <Header>
-                            <HeaderTitle>Футбол</HeaderTitle>
+                            <HeaderTitle>Football</HeaderTitle>
 
                             <Menu>
                                 <MenuButton

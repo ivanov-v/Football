@@ -23,7 +23,7 @@ const Root = styled.button`
     transition: all 0.3s ease;
 `;
 
-export class Button extends PureComponent {
+export class ButtonEx extends PureComponent {
     static defaultProps = {
         onClick: () => {}
     };
@@ -38,7 +38,6 @@ export class Button extends PureComponent {
                 onClick={onClick}
                 className={className}
                 fit={fit}
-                disabled={disabled}
             >
                 {children}
             </Root>
