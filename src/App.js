@@ -40,6 +40,7 @@ const MainForm = styled.div`
 
 const RowTitle = styled.div`
     font-weight: 600;
+    font-size: 17px;
 `;
 
 const Row = styled.div`

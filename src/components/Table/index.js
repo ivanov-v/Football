@@ -13,6 +13,10 @@ const Root = styled.table`
         padding: 8px 12px;
         border: 1px solid #e7e7e7;
     }
+    
+    thead {
+        background-color: #f1f1f1;
+    }
 `;
 
 export const Table = ({titles, items}) => {
