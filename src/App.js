@@ -35,6 +35,7 @@ const Page = styled.div`
 
 const MainForm = styled.div`
     width: 100%;
+    padding-bottom: 250px;
 `;
 
 const RowTitle = styled.div`
