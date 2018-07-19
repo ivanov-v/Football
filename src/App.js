@@ -35,7 +35,6 @@ const Page = styled.div`
 
 const MainForm = styled.div`
     width: 100%;
-    padding-bottom: 250px;
 `;
 
 const RowTitle = styled.div`
@@ -247,6 +246,7 @@ const defaultState = {
     gamersList: [],
     gameGamersList: [],
     valueSelect: '',
+    selectOpened: false,
     gameGamerRemove: '',
     gameRemove: '',
     game: {
@@ -500,6 +500,18 @@ class App extends Component {
         });
     };
 
+    handleSelectOpen = () => {
+        this.setState({
+            selectOpened: true,
+        });
+    };
+
+    handleSelectClose = () => {
+        this.setState({
+            selectOpened: false,
+        });
+    };
+
     render() {
         const {
             game,
@@ -577,6 +589,8 @@ class App extends Component {
                                         menuPlacement="bottom"
                                         maxMenuHeight={120}
                                         noOptionsMessage={() => 'Игрок не найден'}
+                                        onMenuOpen={this.handleSelectOpen}
+                                        onMenuClose={this.handleSelectClose}
                                     />
                                 </GamerSearch>
                             )}
@@ -626,32 +640,34 @@ class App extends Component {
                     </MainForm>
                 )}
 
-                <Footer>
-                    {(game.key && gamersList.length > 0) && (
-                        <EventTextWrapper>
-                            {getEventUpdatesText(this.state)}
-                        </EventTextWrapper>
-                    )}
+                {!this.state.selectOpened && (
+                    <Footer>
+                        {(game.key && gamersList.length > 0) && (
+                            <EventTextWrapper>
+                                {getEventUpdatesText(this.state)}
+                            </EventTextWrapper>
+                        )}
 
-                    {!game.key && (
-                        <FooterButtons>
-                            <ButtonEx onClick={this.handleCreateGame}>Создать игру</ButtonEx>
-                        </FooterButtons>
-                    )}
+                        {!game.key && (
+                            <FooterButtons>
+                                <ButtonEx onClick={this.handleCreateGame}>Создать игру</ButtonEx>
+                            </FooterButtons>
+                        )}
 
-                    {game.key && (
-                        <FooterButtons>
-                            <Button
-                                type="button"
-                                appearance="danger"
-                                spacing="compact"
-                                onClick={this.handleRemoveGame}
-                            >
-                                Отменить игру
-                            </Button>
-                        </FooterButtons>
-                    )}
-                </Footer>
+                        {game.key && (
+                            <FooterButtons>
+                                <Button
+                                    type="button"
+                                    appearance="danger"
+                                    spacing="compact"
+                                    onClick={this.handleRemoveGame}
+                                >
+                                    Отменить игру
+                                </Button>
+                            </FooterButtons>
+                        )}
+                    </Footer>
+                )}
             </Page>
         );
 
