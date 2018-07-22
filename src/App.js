@@ -425,7 +425,7 @@ class App extends Component {
 
     handleAddGamer = () => {
         gamersRef.push({
-            name: this.state.newGamerName,
+            name: this.state.newGamerName.trim(),
         });
 
         this.setState({
