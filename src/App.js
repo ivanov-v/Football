@@ -35,7 +35,7 @@ const Page = styled.div`
 
 const MainForm = styled.div`
     width: 100%;
-    padding-bottom: 250px;
+    padding-bottom: 100px;
 `;
 
 const RowTitle = styled.div`
@@ -587,7 +587,7 @@ class App extends Component {
                                         isSearchable
                                         onChange={this.handleChangeGamerSelect}
                                         value={valueSelect}
-                                        menuPlacement="bottom"
+                                        menuPlacement="top"
                                         maxMenuHeight={120}
                                         noOptionsMessage={() => 'Игрок не найден'}
                                         onMenuOpen={this.handleSelectOpen}
